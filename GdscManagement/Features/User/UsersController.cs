@@ -80,10 +80,43 @@ public class UserController : ControllerBase
 
         return Ok(users);
     }
-
+    
+    
     [HttpGet("{id}")]
     public async Task<ActionResult<UserResponse>> GetUser([FromRoute] string id)
     {
+        var user = await _appDbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => id == x.id);
+        if(user is null) return  NotFound("User does not exist");
+
+        var res = new UserResponse
+        {
+            id = user.id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            Roles = user.Roles.Select(
+                role => new RoleResponseForUser
+                {
+                    Value = role.Value,
+                    Description = role.Description
+                }).ToList()
+        };
+
+        return res;
+    }
+
+    /*[HttpPut("{id}")]
+    public async Task<ActionResult<User>> UpdateUser(UserRequest userRequest, [FromRoute] string id)
+    {
+        
+        var memberRole = await _appDbContext.Roles.FirstOrDefaultAsync(x => x.Value == "Member");
+        if (memberRole is null) return NotFound("Member role does not exist");
+
+        var roles = new List<Role>
+        {
+            memberRole
+        };
+        
         var users = await _appDbContext.Users.Include(x => x.Roles).Select(
             user => new UserResponse
             {
@@ -100,9 +133,24 @@ public class UserController : ControllerBase
                 )
             }).ToListAsync();
 
+        var userss = _appDbContext.Users.FirstOrDefault(x => id ==x.id);
+
         var res =  users.FirstOrDefault(x => x.id == id);
         if (res is null) return NotFound("this user does not exist");
+        
+        var user = new User
+        {
+            id = Guid.NewGuid().ToString(),
+            Created = DateTime.UtcNow,
+            Updated = DateTime.UtcNow,
+            FirstName = userRequest.FirstName,
+            LastName = userRequest.LastName,
+            Email = userRequest.Email,
+            Roles = res.Roles;
+        };
+        
+        res = (await _appDbContext.Users.AddAsync(res)).Entity;
 
-        return res;
-    }
+        return Ok("updated user");
+    }*/
 }
