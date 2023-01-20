@@ -1,5 +1,7 @@
 ﻿using GdscManagement.Database;
+using GdscManagement.Features.User;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GdscManagement.Features.Roles;
 
@@ -33,5 +35,24 @@ public class RolesController : ControllerBase
         return Created("role", result.Entity);
     }
     
-    
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<RoleResponse>>> GetRole()
+    {
+        var roles = await _appDbContext.Roles.Select(
+            role => new RoleResponse
+            {
+                Value = role.Value,
+                Description = role.Description,
+                Users = role.Users.Select(user => new UserResponeForRole
+                    {
+                        id = user.id,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        Email = user.Email,
+                    })
+            }
+        ).ToListAsync();
+
+        return Ok(roles);
+    }
 }
