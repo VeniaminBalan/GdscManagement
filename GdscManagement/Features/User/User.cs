@@ -11,5 +11,5 @@ public class User : Entity
     
     public string Email  { get; set; }
 
-    public IEnumerable<Role> Roles { get; set; }
+    public List<Role> Roles { get; set; }
 }

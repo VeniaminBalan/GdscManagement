@@ -156,8 +156,9 @@ public class UserController : ControllerBase
         var memberRole = await _appDbContext.Roles.FirstOrDefaultAsync(x => x.Value == role);
         if (memberRole is null) return NotFound("Member role does not exist");
         
-        (user.Roles.ToList()).Add(memberRole); // ?
+        user.Roles.Add(memberRole); // ?
 
+        // user.Roles.
         await _appDbContext.SaveChangesAsync();
         
         return Ok(new UserResponse
