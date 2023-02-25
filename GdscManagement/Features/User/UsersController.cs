@@ -146,19 +146,33 @@ public class UserController : ControllerBase
         return Ok("user was deleted");
     }
 
-    /*
-    [HttpPatch("{id}")]
-    public async Task<ActionResult<UserResponse>> AddRole([FromBody] RoleRequest roleRequest, [FromRoute] string id)
+    
+    [HttpPost("{id}")]
+    public async Task<ActionResult<UserResponse>> AddRole(string role, [FromRoute] string id)
     {
         var user = await _appDbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => id == x.id);
         if(user is null) return  NotFound("User does not exist");
         
-        var memberRole = await _appDbContext.Roles.FirstOrDefaultAsync(x => x.Value == roleRequest.Value);
+        var memberRole = await _appDbContext.Roles.FirstOrDefaultAsync(x => x.Value == role);
         if (memberRole is null) return NotFound("Member role does not exist");
+        
+        (user.Roles.ToList()).Add(memberRole); // ?
 
+        await _appDbContext.SaveChangesAsync();
         
-        
-        return Ok("User and member role was found");
+        return Ok(new UserResponse
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            id = user.id,
+            Roles = user.Roles.Select(
+                newRole => new RoleResponseForUser
+                {
+                    Value = newRole.Value,
+                    Description = newRole.Description
+                }).ToList()
+        });
     }
-    */
+    
 }
